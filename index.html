@@ -99,17 +99,14 @@ d3.select("svg")
   .append("g")
   .call(makeAnnotations)
   
-button = d3.select("svg").append("g").append("rect").attr('x', svg_w-50)
-  .attr('y', 20)
-  .attr('width', 100)
-  .attr('height', 40)
-  .attr('stroke', 'black')
-  .attr('fill', '#69a3b2')
-  .attr("id", "next-slide")
+d3.select("svg").append('text')
+  .attr('x', svg_w-50)
+  .attr('y', 50)
+  .attr('stroke', 'green')
+  .style("font-size", 19)
+  .text("Click here for next scene")
+  .on("click", function() {d3.select('svg').remove(); })
   
-
-  
-//d3.select('svg').remove();
 }        
 </script>
 </body>
