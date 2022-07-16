@@ -5,10 +5,12 @@
 <!-- Load d3-annotation Library -->
 <script src="https://rawgit.com/susielu/d3-annotation/master/d3-annotation.min.js"></script>
 <style> circle {fill: lightblue; stroke: black;} </style>
-<body onload='init()'>
+<body>
 <svg width=800 height=800>
 </svg>
+
 <script>
+
 var svg_w = 600
 var svg_h = 600
 var svg_x_marg = 50
@@ -17,11 +19,12 @@ var svg_wm = svg_w - svg_x_marg
 var svg_hm = svg_h - svg_y_marg
 var min_radius = 6
 
-async function init() {
+init1()
+
+async function init1() {
   
 data = await d3.csv("https://flunky.github.io/cars2017.csv", d3.autoType);
 plot()
-//d3.select('svg').remove();
 }
 function plot() {
 data = data.filter(function(d){ return d.Fuel == "Gasoline" }) 
@@ -30,6 +33,7 @@ var xScale = d3.scaleLog().base(10).domain([10, 150]).range([0, svg_wm]);
 var yScale = d3.scaleLog().base(10).domain([10, 150]).range([0, svg_hm]);
 var xScale2 = d3.scaleLog().base(10).domain([10, 150]).range([0, svg_w]);
 var yScale2 = d3.scaleLog().base(10).domain([10, 150]).range([svg_h, 0]);
+
 
 // var xScale = d3.scaleLinear().domain([10, 150]).range([0, svg_wm]);
 // var yScale = d3.scaleLinear().domain([10, 150]).range([0, svg_hm]);
@@ -94,7 +98,18 @@ const makeAnnotations = d3.annotation()
 d3.select("svg")
   .append("g")
   .call(makeAnnotations)
-    
+  
+button = d3.select("svg").append("g").append("rect").attr('x', svg_w-50)
+  .attr('y', 20)
+  .attr('width', 100)
+  .attr('height', 40)
+  .attr('stroke', 'black')
+  .attr('fill', '#69a3b2')
+  .attr("id", "next-slide")
+  
+
+  
+//d3.select('svg').remove();
 }        
 </script>
 </body>
