@@ -15,7 +15,7 @@ var svg_x_marg = 50
 var svg_y_marg = 50
 var svg_wm = svg_w - svg_x_marg
 var svg_hm = svg_h - svg_y_marg
-var min_radius = 8
+var min_radius = 6
 
 async function init() {
   
@@ -44,7 +44,7 @@ var myColor = d3.scaleLinear().domain([1,12])
   .range(["green", "red"])
 
 d3.select("svg").append("g").attr("transform","translate("+50+","+50+")").selectAll("circle").data(data).enter().append("circle")
-.attr("cx", function(d,i) {return (svg_w/svg_wm)*xScale(d.AverageCityMPG);}).attr("cy", function(d,i) {return svg_h-(svg_h/svg_hm)*yScale(d.AverageHighwayMPG);}).attr("r", function(d,i) {return min_radius+d.EngineCylinders;}).style("fill", function (d) { return myColor(d.EngineCylinders);})
+.attr("cx", function(d,i) {return (svg_w/svg_wm)*xScale(d.AverageCityMPG);}).attr("cy", function(d,i) {return svg_h-(svg_h/svg_hm)*yScale(d.AverageHighwayMPG);}).attr("r", function(d,i) {return min_radius;}).style("fill", function (d) { return myColor(d.EngineCylinders);})
 
 d3.select("svg").append("g").attr("transform","translate("+50+","+50+")").call(d3.axisLeft(yScale2).tickValues([10, 20, 50, 100]).tickFormat(d3.format("d")))
 
