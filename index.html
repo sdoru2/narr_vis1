@@ -98,16 +98,18 @@ const makeAnnotations = d3.annotation()
 d3.select("svg")
   .append("g")
   .call(makeAnnotations)
-  
+
 d3.select("svg").append('text')
   .attr('x', svg_w-50)
   .attr('y', 50)
   .attr('stroke', 'green')
   .style("font-size", 19)
   .text("Click here for next scene")
-  .on("click", function() {d3.select('svg').remove(); })
-  
-}        
+  .on("click", function updateScene() {d3.select('svg').remove(); d3.selectAll("body").append("svg").attr("width", 800).attr("height", 800);  init1(); })
+
+    
+}
 </script>
+
 </body>
 </html>
