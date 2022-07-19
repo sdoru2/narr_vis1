@@ -1,115 +1,133 @@
 <html>
 <!-- This is a comment -->
+
+
 <h1>2017 Automobile Fuel Efficiency </h1>
 <script src='https://d3js.org/d3.v5.min.js'></script>
 <!-- Load d3-annotation Library -->
 <script src="https://rawgit.com/susielu/d3-annotation/master/d3-annotation.min.js"></script>
 <style> circle {fill: lightblue; stroke: black;} </style>
 <body>
-<svg width=800 height=800>
-</svg>
+    <svg width=800 height=800>
+    </svg>
 
-<script>
+    <button id="btn" type="button" onclick="updateScene();"> Page 1 </button>
+    <button id="btn" type="button" onclick="updateScene();"> Page 2 </button>
+    <button id="btn" type="button" onclick="updateScene();"> Page 3 </button>
 
-var svg_w = 600
-var svg_h = 600
-var svg_x_marg = 50
-var svg_y_marg = 50
-var svg_wm = svg_w - svg_x_marg
-var svg_hm = svg_h - svg_y_marg
-var min_radius = 6
+    <script>
+        var svg_w = 600
+        var svg_h = 600
+        var svg_x_marg = 50
+        var svg_y_marg = 50
+        var svg_wm = svg_w - svg_x_marg
+        var svg_hm = svg_h - svg_y_marg
+        var min_radius = 6
+        var slide_cnt = 0
+        
+        function clearCanvas() {
+            d3.selectAll("body").select('svg').remove();
+        }
+        
+        function updateScene() {
+        drawCanvas();
+        slide_cnt = slide_cnt + 1;
+        // if (slide_cnt == 2)
+        //     document.getElementById("btn").style.display = "none";
+        }
+        
+        drawCanvas();
+        
+        async function drawCanvas() {
+            clearCanvas();
+            d3.selectAll("body").append("svg").attr("width", 800).attr("height", 800);
+            data = await d3.csv("https://flunky.github.io/cars2017.csv", d3.autoType);
+            plot()
+        }
+        function plot() {
+            
+            data = data.filter(function(d){ return d.Fuel == "Gasoline" }) 
+            
+            var xScale = d3.scaleLog().base(10).domain([10, 150]).range([0, svg_wm]);
+            var yScale = d3.scaleLog().base(10).domain([10, 150]).range([0, svg_hm]);
+            var xScale2 = d3.scaleLog().base(10).domain([10, 150]).range([0, svg_w]);
+            var yScale2 = d3.scaleLog().base(10).domain([10, 150]).range([svg_h, 0]);
+            
+            var myColor = d3.scaleLinear().domain([1,12])
+              .range(["green", "red"])
+            
+            var tooltip = d3.select("body")
+                .append("div")
+                .style("position", "absolute")
+                .style("z-index", "10")
+                .style("visibility", "hidden")
+                .text("Default tooltip text, override this");
+            
+            d3.select("svg").append("g").attr("transform","translate("+50+","+50+")").selectAll("circle").data(data).enter().append("circle")
+            .attr("cx", function(d,i) {return (svg_w/svg_wm)*xScale(d.AverageCityMPG);}).attr("cy", function(d,i) {return svg_h-(svg_h/svg_hm)*yScale(d.AverageHighwayMPG);}).attr("r", function(d,i) {return min_radius;}).style("fill", function (d) { return myColor(d.EngineCylinders);}).on("mouseover", function(d){tooltip.text(d.Make); return tooltip.style("visibility", "visible");}).on("mousemove", function(){return tooltip.style("top",(d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px");}).on("mouseout", function(){return tooltip.style("visibility", "hidden");});
+            
+            d3.select("svg").append("g").attr("transform","translate("+50+","+50+")").call(d3.axisLeft(yScale2).tickValues([10, 20, 50, 100]).tickFormat(d3.format("d")))
+            
+            d3.select("svg").append("g").attr("transform","translate("+50+","+(svg_h+50)+")").call(d3.axisBottom(xScale2).tickValues([10, 20, 50, 100]).tickFormat(d3.format("d")))
+            
+            d3.select("svg").append("text")      // text label for the x axis
+                    .attr("x", svg_w/2 )
+                    .attr("y", svg_h + 100 )
+                    .style("text-anchor", "middle")
+                    .text("Average City MPG");
+            
+            d3.select("svg").append("text")
+                //.attr("class", "y label")
+                .attr("text-anchor", "middle")
+                .attr("y", 200)
+                .attr("x", -100)
+                //.attr("x", 10)
+                //.attr("dy", ".75em")
+                .attr("transform", "rotate(-90)")
+                .text("Average Highway MPG");
+            
+            
+            // Features of the annotation
+            const annotations = [
+              {
+                note: {
+                  label: "Here is the annotation label",
+                  title: "Annotation title",
+                  align: "middle",  // try right or left
+                  wrap: 200,  // try something smaller to see text split in several lines
+                  padding: 10   // More = text lower
+                },
+                color: ["black"],
+                x: 16,
+                y: 16,
+                dy: 10,
+                dx: 10
+              }
+            ]
+            
+            // Add annotation to the chart
+            const makeAnnotations = d3.annotation()
+              .annotations(annotations)
+            d3.select("svg")
+              .append("g")
+              .call(makeAnnotations)
+            
+            
+            // rect = d3.select("svg").append('rect').attr('x', svg_w-50).attr('y', 50).attr("width", 20).attr("height", 20)
+            
+            
+            // d3.select("svg").append('text')
+            //   .attr('x', svg_w-50)
+            //   .attr('y', 50)
+            //   .attr('stroke', 'green')
+            //   .style("font-size", 19)
+            //   .text("Click here for next scene")
+            //   .on("click", function updateScene() {d3.select('svg').remove(); d3.selectAll("body").append("svg").attr("width", 800).attr("height", 800);  init1(); })
+            
+            
+        }
 
-init1()
-
-async function init1() {
-  
-data = await d3.csv("https://flunky.github.io/cars2017.csv", d3.autoType);
-plot()
-}
-function plot() {
-data = data.filter(function(d){ return d.Fuel == "Gasoline" }) 
-
-var xScale = d3.scaleLog().base(10).domain([10, 150]).range([0, svg_wm]);
-var yScale = d3.scaleLog().base(10).domain([10, 150]).range([0, svg_hm]);
-var xScale2 = d3.scaleLog().base(10).domain([10, 150]).range([0, svg_w]);
-var yScale2 = d3.scaleLog().base(10).domain([10, 150]).range([svg_h, 0]);
-
-
-// var xScale = d3.scaleLinear().domain([10, 150]).range([0, svg_wm]);
-// var yScale = d3.scaleLinear().domain([10, 150]).range([0, svg_hm]);
-// var xScale2 = d3.scaleLinear().domain([10, 150]).range([0, svg_w]);
-// var yScale2 = d3.scaleLinear().domain([10, 150]).range([svg_h, 0]);
-
-var myColor = d3.scaleLinear().domain([1,12])
-  .range(["green", "red"])
-
-var tooltip = d3.select("body")
-    .append("div")
-    .style("position", "absolute")
-    .style("z-index", "10")
-    .style("visibility", "hidden")
-    .text("Default tooltip text, override this");
-
-d3.select("svg").append("g").attr("transform","translate("+50+","+50+")").selectAll("circle").data(data).enter().append("circle")
-.attr("cx", function(d,i) {return (svg_w/svg_wm)*xScale(d.AverageCityMPG);}).attr("cy", function(d,i) {return svg_h-(svg_h/svg_hm)*yScale(d.AverageHighwayMPG);}).attr("r", function(d,i) {return min_radius;}).style("fill", function (d) { return myColor(d.EngineCylinders);}).on("mouseover", function(d){tooltip.text(d.Make); return tooltip.style("visibility", "visible");}).on("mousemove", function(){return tooltip.style("top",(d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px");}).on("mouseout", function(){return tooltip.style("visibility", "hidden");});
-
-d3.select("svg").append("g").attr("transform","translate("+50+","+50+")").call(d3.axisLeft(yScale2).tickValues([10, 20, 50, 100]).tickFormat(d3.format("d")))
-
-d3.select("svg").append("g").attr("transform","translate("+50+","+(svg_h+50)+")").call(d3.axisBottom(xScale2).tickValues([10, 20, 50, 100]).tickFormat(d3.format("d")))
-
-d3.select("svg").append("text")      // text label for the x axis
-        .attr("x", svg_w/2 )
-        .attr("y", svg_h + 100 )
-        .style("text-anchor", "middle")
-        .text("Average City MPG");
-
-d3.select("svg").append("text")
-    //.attr("class", "y label")
-    .attr("text-anchor", "middle")
-    .attr("y", 200)
-    .attr("x", -100)
-    //.attr("x", 10)
-    //.attr("dy", ".75em")
-    .attr("transform", "rotate(-90)")
-    .text("Average Highway MPG");
-
-
-// Features of the annotation
-const annotations = [
-  {
-    note: {
-      label: "Here is the annotation label",
-      title: "Annotation title",
-      align: "middle",  // try right or left
-      wrap: 200,  // try something smaller to see text split in several lines
-      padding: 10   // More = text lower
-    },
-    color: ["black"],
-    x: 16,
-    y: 16,
-    dy: 10,
-    dx: 10
-  }
-]
-
-// Add annotation to the chart
-const makeAnnotations = d3.annotation()
-  .annotations(annotations)
-d3.select("svg")
-  .append("g")
-  .call(makeAnnotations)
-
-d3.select("svg").append('text')
-  .attr('x', svg_w-50)
-  .attr('y', 50)
-  .attr('stroke', 'green')
-  .style("font-size", 19)
-  .text("Click here for next scene")
-  .on("click", function updateScene() {d3.select('svg').remove(); d3.selectAll("body").append("svg").attr("width", 800).attr("height", 800);  init1(); })
-
-    
-}
-</script>
-
+        
+    </script>
 </body>
 </html>
