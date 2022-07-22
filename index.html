@@ -2,89 +2,139 @@
 <!-- This is a comment -->
 
 
-<h1>2017 Automobile Fuel Efficiency </h1>
+<h1> US Vehicle Fuel Economy Data (2000-2022) </h1>
+<h3> Data from Department of Energy and Environmental Protection Agency <a href="https://datasource.kapsarc.org/explore/dataset/us-vehicle-fuel-economy-data-1984-2017/information/?disjunctive.make&disjunctive.model&sort=-year&refine.fueltype1=Electricity&dataChart=eyJxdWVyaWVzIjpbeyJjaGFydHMiOlt7InR5cGUiOiJjb2x1bW4iLCJmdW5jIjoiQVZHIiwieUF4aXMiOiJiYXJyZWxzMDgiLCJzY2llbnRpZmljRGlzcGxheSI6dHJ1ZSwiY29sb3IiOiJyYW5nZS1BY2NlbnQifV0sInhBeGlzIjoieWVhciIsIm1heHBvaW50cyI6bnVsbCwidGltZXNjYWxlIjoieWVhciIsInNvcnQiOiIiLCJzZXJpZXNCcmVha2Rvd24iOiJtYWtlIiwiY29uZmlnIjp7ImRhdGFzZXQiOiJ1cy12ZWhpY2xlLWZ1ZWwtZWNvbm9teS1kYXRhLTE5ODQtMjAxNyIsIm9wdGlvbnMiOnsiZGlzanVuY3RpdmUubWFrZSI6dHJ1ZSwiZGlzanVuY3RpdmUubW9kZWwiOnRydWUsInNvcnQiOiIteWVhciIsInJlZmluZS5mdWVsdHlwZTEiOiJFbGVjdHJpY2l0eSJ9fX1dLCJkaXNwbGF5TGVnZW5kIjp0cnVlLCJhbGlnbk1vbnRoIjp0cnVlfQ%3D%3D">(Data Source)</a> </h3>
 <script src='https://d3js.org/d3.v5.min.js'></script>
 <!-- Load d3-annotation Library -->
 <script src="https://rawgit.com/susielu/d3-annotation/master/d3-annotation.min.js"></script>
 <style> circle {fill: lightblue; stroke: black;} </style>
 <body>
-    <svg width=800 height=800>
+    <svg width=1000 height=1000>
     </svg>
 
-    <button id="btn" type="button" onclick="updateScene();"> Page 1 </button>
-    <button id="btn" type="button" onclick="updateScene();"> Page 2 </button>
-    <button id="btn" type="button" onclick="updateScene();"> Page 3 </button>
+    <!-- buttons to switch to all 3 scenes -->
+    <button id="btn" type="button" onclick="updateScene(1);"> Page 1 </button>
+    <button id="btn" type="button" onclick="updateScene(2);"> Page 2 </button>
+    <button id="btn" type="button" onclick="updateScene(3);"> Page 3 </button>
 
     <script>
-        var svg_w = 600
-        var svg_h = 600
-        var svg_x_marg = 50
-        var svg_y_marg = 50
+        //Variables
+        var svg_w = 800
+        var svg_h = 800
+        var svg_x_marg = 100
+        var svg_y_marg = 100
         var svg_wm = svg_w - svg_x_marg
         var svg_hm = svg_h - svg_y_marg
         var min_radius = 6
         var slide_cnt = 0
+        var xyaxis_min = 10
+        var xyaxis_max = 250
+        var data_loaded = false
         
+        //Clears the canvas
         function clearCanvas() {
             d3.selectAll("body").select('svg').remove();
         }
         
-        function updateScene() {
-        drawCanvas();
-        slide_cnt = slide_cnt + 1;
-        // if (slide_cnt == 2)
-        //     document.getElementById("btn").style.display = "none";
+        //Updates the scene/slide based on "flow_state" input variable
+        function updateScene(flow_state) {
+        drawCanvas(flow_state);
         }
         
-        drawCanvas();
+        //Default call, start from scene 1
+        drawCanvas(1);
         
-        async function drawCanvas() {
+        async function drawCanvas(flow_state) {
             clearCanvas();
-            d3.selectAll("body").append("svg").attr("width", 800).attr("height", 800);
-            data = await d3.csv("https://flunky.github.io/cars2017.csv", d3.autoType);
-            plot()
+            d3.selectAll("body").append("svg").attr("width", 1000).attr("height", 1000);
+            if (data_loaded == false) {
+              raw_data = await d3.csv("https://raw.githubusercontent.com/sdoru2/narr_vis1/main/us-fuel-eco-cleanedup.csv", d3.autoType);
+              data_loaded = true;
+            }
+            plot(flow_state)
         }
-        function plot() {
+        function plot(flow_state) {
             
-            data = data.filter(function(d){ return d.Fuel == "Gasoline" }) 
+            //filter data from year 2000 to 2022, also exclude any data points with MPG < 1
+            data = raw_data.filter(function(d){ if ((d.Year >= 2000) && (d.UCity >= 1)) return d;}) 
+           
+            var xScale = d3.scaleLog().base(10).domain([xyaxis_min, xyaxis_max]).range([0, svg_wm]);
+            var yScale = d3.scaleLog().base(10).domain([xyaxis_min, xyaxis_max]).range([0, svg_hm]);
+            var xScale2 = d3.scaleLog().base(10).domain([xyaxis_min, xyaxis_max]).range([0, svg_w]);
+            var yScale2 = d3.scaleLog().base(10).domain([xyaxis_min, xyaxis_max]).range([svg_h, 0]);
             
-            var xScale = d3.scaleLog().base(10).domain([10, 150]).range([0, svg_wm]);
-            var yScale = d3.scaleLog().base(10).domain([10, 150]).range([0, svg_hm]);
-            var xScale2 = d3.scaleLog().base(10).domain([10, 150]).range([0, svg_w]);
-            var yScale2 = d3.scaleLog().base(10).domain([10, 150]).range([svg_h, 0]);
-            
-            var myColor = d3.scaleLinear().domain([1,12])
+            var cylinders_max = d3.max(data, function(d) { return d.cylinders; });
+            var cylinders_min = d3.min(data, function(d) { return d.cylinders; });
+            var myColorCylinders = d3.scaleLinear().domain([cylinders_min,cylinders_max])
               .range(["green", "red"])
+
+            var Co2_max = d3.max(data, function(d) { return d.co2TailpipeGpm; });
+            var Co2_min = d3.min(data, function(d) { return d.co2TailpipeGpm; });
+            var myColorCo2 = d3.scaleLinear().domain([Co2_min,Co2_max])
+              .range(["yellow", "red"])
             
+            var fuelcost_max = d3.max(data, function(d) { return d.fuelCost08; });
+            var fuelcost_min = d3.min(data, function(d) { return d.fuelCost08; });
+            var myColorFuelCost = d3.scaleLinear().domain([fuelcost_min,fuelcost_max])
+              .range(["gray", "orange"])
+
             var tooltip = d3.select("body")
                 .append("div")
                 .style("position", "absolute")
                 .style("z-index", "10")
                 .style("visibility", "hidden")
-                .text("Default tooltip text, override this");
+                .text("Default tooltip text, override this")
+                .style('font-size', '16px')
+                .style("font-family", "sans-serif")
+                .style('color', 'blue')
+                .style("background-color", "white");
+
+            if (flow_state == 1) {
+              // main scatter plot
+              d3.select("svg").append("g").attr("transform","translate("+svg_x_marg+","+svg_y_marg+")").selectAll("circle").data(data).enter().append("circle")
+              .attr("cx", function(d,i) {return (svg_w/svg_wm)*xScale(d.UCity);}).attr("cy", function(d,i) {return svg_h-(svg_h/svg_hm)*yScale(d.UHighway);})
+              .attr("r", function(d,i) {return min_radius;}).style("fill", function (d) { return myColorCylinders(d.cylinders);})
+              .on("mouseover", function(d){tooltip.text(`Num of cylinders: ${d.cylinders + 0}, Make: ${d.Manufacturer}`); return tooltip.style("visibility", "visible");})
+              .on("mousemove", function(){return tooltip.style("top",(d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px");})
+              .on("mouseout", function(){return tooltip.style("visibility", "hidden");});
+            }
+            else if (flow_state == 2) {
+              // main scatter plot
+              d3.select("svg").append("g").attr("transform","translate("+svg_x_marg+","+svg_y_marg+")").selectAll("circle").data(data).enter().append("circle")
+              .attr("cx", function(d,i) {return (svg_w/svg_wm)*xScale(d.UCity);}).attr("cy", function(d,i) {return svg_h-(svg_h/svg_hm)*yScale(d.UHighway);})
+              .attr("r", function(d,i) {return min_radius;}).style("fill", function (d) { return myColorCo2(d.co2TailpipeGpm);})
+              .on("mouseover", function(d){tooltip.text(`co2 g/mile: ${d.co2TailpipeGpm + 0}, Make: ${d.Manufacturer}`); return tooltip.style("visibility", "visible");})
+              .on("mousemove", function(){return tooltip.style("top",(d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px");})
+              .on("mouseout", function(){return tooltip.style("visibility", "hidden");});              
+            }
+            else if (flow_state == 3) {
+              // main scatter plot
+              d3.select("svg").append("g").attr("transform","translate("+svg_x_marg+","+svg_y_marg+")").selectAll("circle").data(data).enter().append("circle")
+              .attr("cx", function(d,i) {return (svg_w/svg_wm)*xScale(d.UCity);}).attr("cy", function(d,i) {return svg_h-(svg_h/svg_hm)*yScale(d.UHighway);})
+              .attr("r", function(d,i) {return min_radius;}).style("fill", function (d) { return myColorFuelCost(d.fuelCost08);})
+              .on("mouseover", function(d){tooltip.text(`Fuel Cost: ${d.fuelCost08 + 0}, Make: ${d.Manufacturer}`); return tooltip.style("visibility", "visible");})
+              .on("mousemove", function(){return tooltip.style("top",(d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px");})
+              .on("mouseout", function(){return tooltip.style("visibility", "hidden");});              
+            }
+            // y axis
+            d3.select("svg").append("g").attr("transform","translate("+svg_x_marg+","+svg_y_marg+")").call(d3.axisLeft(yScale2).tickValues([10, 20, 50, 100, 150, 200, 250]).tickFormat(d3.format("d")))
             
-            d3.select("svg").append("g").attr("transform","translate("+50+","+50+")").selectAll("circle").data(data).enter().append("circle")
-            .attr("cx", function(d,i) {return (svg_w/svg_wm)*xScale(d.AverageCityMPG);}).attr("cy", function(d,i) {return svg_h-(svg_h/svg_hm)*yScale(d.AverageHighwayMPG);}).attr("r", function(d,i) {return min_radius;}).style("fill", function (d) { return myColor(d.EngineCylinders);}).on("mouseover", function(d){tooltip.text(d.Make); return tooltip.style("visibility", "visible");}).on("mousemove", function(){return tooltip.style("top",(d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px");}).on("mouseout", function(){return tooltip.style("visibility", "hidden");});
+            // x axis
+            d3.select("svg").append("g").attr("transform","translate("+svg_x_marg+","+(svg_h+svg_y_marg)+")").call(d3.axisBottom(xScale2).tickValues([10, 20, 50, 100, 150, 200, 250]).tickFormat(d3.format("d")))
             
-            d3.select("svg").append("g").attr("transform","translate("+50+","+50+")").call(d3.axisLeft(yScale2).tickValues([10, 20, 50, 100]).tickFormat(d3.format("d")))
-            
-            d3.select("svg").append("g").attr("transform","translate("+50+","+(svg_h+50)+")").call(d3.axisBottom(xScale2).tickValues([10, 20, 50, 100]).tickFormat(d3.format("d")))
-            
+            //Add X axis label
             d3.select("svg").append("text")      // text label for the x axis
                     .attr("x", svg_w/2 )
-                    .attr("y", svg_h + 100 )
+                    .attr("y", svg_h + svg_y_marg+svg_y_marg/2 )
                     .style("text-anchor", "middle")
-                    .text("Average City MPG");
+                    .text("Average City Fuel Economy(Miles Per Gallon)");
             
             d3.select("svg").append("text")
-                //.attr("class", "y label")
                 .attr("text-anchor", "middle")
-                .attr("y", 200)
-                .attr("x", -100)
-                //.attr("x", 10)
-                //.attr("dy", ".75em")
+                .attr("y", 40)
+                .attr("x", -500)
                 .attr("transform", "rotate(-90)")
-                .text("Average Highway MPG");
+                .text("Average Highway Fuel Economy(Miles Per Gallon)");
             
             
             // Features of the annotation
@@ -111,19 +161,6 @@
             d3.select("svg")
               .append("g")
               .call(makeAnnotations)
-            
-            
-            // rect = d3.select("svg").append('rect').attr('x', svg_w-50).attr('y', 50).attr("width", 20).attr("height", 20)
-            
-            
-            // d3.select("svg").append('text')
-            //   .attr('x', svg_w-50)
-            //   .attr('y', 50)
-            //   .attr('stroke', 'green')
-            //   .style("font-size", 19)
-            //   .text("Click here for next scene")
-            //   .on("click", function updateScene() {d3.select('svg').remove(); d3.selectAll("body").append("svg").attr("width", 800).attr("height", 800);  init1(); })
-            
             
         }
 
