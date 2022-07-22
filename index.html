@@ -100,6 +100,7 @@
 
             if (flow_state == 1) {
               chart_title = "Number of Engine Cylinders Relationship with Fuel Economy"
+              
               // main scatter plot
               d3.select("svg").append("g").attr("transform","translate("+svg_x_marg+","+svg_y_marg+")").selectAll("circle").data(data).enter().append("circle")
               .attr("cx", function(d,i) {return (svg_w/svg_wm)*xScale(d.UCity);}).attr("cy", function(d,i) {return svg_h-(svg_h/svg_hm)*yScale(d.UHighway);})
@@ -180,7 +181,7 @@
               high_fuel_eco_annotate = [
                 {
                   note: {
-                    label: "no carbon footprint with electric vehicles (as expected)",
+                    label: "no carbon footprint with electric vehicles",
                     //title: "Annotation title",
                     align: "middle",  // right or left
                     wrap: 200,  // maybe something smaller to see text split in several lines
@@ -214,7 +215,7 @@
               low_fuel_eco_annotate = [
                 {
                   note: {
-                    label: "As expected fuel cost higher with more cylinders, lower fuel economy vehicles",
+                    label: "As expected fuel cost is higher for more cylinders, lower fuel economy vehicles",
                     //title: "Annotation title",
                     align: "middle",  // right or left
                     wrap: 400,  // maybe something smaller to see text split in several lines
@@ -277,6 +278,7 @@
             .attr("y", (svg_x_marg / 2))
             .attr("text-anchor", "middle")  
             .style("font-size", "22px") 
+            .attr("fill", "#D35400")
             //.style("text-decoration", "underline")  
             .attr("font-weight", 700)
             .text(chart_title);
