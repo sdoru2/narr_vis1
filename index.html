@@ -1,15 +1,23 @@
 <html>
-<!-- This is a comment -->
-
+<!-- Style -->
+<style> circle {fill: lightblue; stroke: black;} 
+  h1 {text-align: center;}
+  h2 {text-align: center;}
+  h3 {text-align: center;}
+  p {text-align: center;}
+  div {text-align: center;}
+  body {text-align: center;}
+  button {position: relative; top:-70px; right: -350px;}
+  </style>
 
 <h1> US Vehicle Fuel Economy Data (2000-2022) </h1>
 <h3> Data from Department of Energy and Environmental Protection Agency <a href="https://datasource.kapsarc.org/explore/dataset/us-vehicle-fuel-economy-data-1984-2017/information/?disjunctive.make&disjunctive.model&sort=-year&refine.fueltype1=Electricity&dataChart=eyJxdWVyaWVzIjpbeyJjaGFydHMiOlt7InR5cGUiOiJjb2x1bW4iLCJmdW5jIjoiQVZHIiwieUF4aXMiOiJiYXJyZWxzMDgiLCJzY2llbnRpZmljRGlzcGxheSI6dHJ1ZSwiY29sb3IiOiJyYW5nZS1BY2NlbnQifV0sInhBeGlzIjoieWVhciIsIm1heHBvaW50cyI6bnVsbCwidGltZXNjYWxlIjoieWVhciIsInNvcnQiOiIiLCJzZXJpZXNCcmVha2Rvd24iOiJtYWtlIiwiY29uZmlnIjp7ImRhdGFzZXQiOiJ1cy12ZWhpY2xlLWZ1ZWwtZWNvbm9teS1kYXRhLTE5ODQtMjAxNyIsIm9wdGlvbnMiOnsiZGlzanVuY3RpdmUubWFrZSI6dHJ1ZSwiZGlzanVuY3RpdmUubW9kZWwiOnRydWUsInNvcnQiOiIteWVhciIsInJlZmluZS5mdWVsdHlwZTEiOiJFbGVjdHJpY2l0eSJ9fX1dLCJkaXNwbGF5TGVnZW5kIjp0cnVlLCJhbGlnbk1vbnRoIjp0cnVlfQ%3D%3D">(Data Source)</a> </h3>
 <script src='https://d3js.org/d3.v5.min.js'></script>
 <!-- Load d3-annotation Library -->
 <script src="https://rawgit.com/susielu/d3-annotation/master/d3-annotation.min.js"></script>
-<style> circle {fill: lightblue; stroke: black;} </style>
+
 <body>
-    <svg width=1000 height=1000>
+    <svg width=800 height=800>
     </svg>
 
     <!-- buttons to switch to all 3 scenes -->
@@ -19,10 +27,10 @@
 
     <script>
         //Variables
-        var svg_w = 800
-        var svg_h = 800
-        var svg_x_marg = 100
-        var svg_y_marg = 100
+        var svg_w = 600
+        var svg_h = 600
+        var svg_x_marg = 50
+        var svg_y_marg = 50
         var svg_wm = svg_w - svg_x_marg
         var svg_hm = svg_h - svg_y_marg
         var min_radius = 6
@@ -30,6 +38,7 @@
         var xyaxis_min = 10
         var xyaxis_max = 250
         var data_loaded = false
+        var chart_title
         
         //Clears the canvas
         function clearCanvas() {
@@ -46,7 +55,7 @@
         
         async function drawCanvas(flow_state) {
             clearCanvas();
-            d3.selectAll("body").append("svg").attr("width", 1000).attr("height", 1000);
+            d3.selectAll("body").append("svg").attr("width", 800).attr("height", 800);
             if (data_loaded == false) {
               raw_data = await d3.csv("https://raw.githubusercontent.com/sdoru2/narr_vis1/main/us-fuel-eco-cleanedup.csv", d3.autoType);
               data_loaded = true;
@@ -90,6 +99,7 @@
                 .style("background-color", "white");
 
             if (flow_state == 1) {
+              chart_title = "Number of Engine Cylinders Relationship with Fuel Economy"
               // main scatter plot
               d3.select("svg").append("g").attr("transform","translate("+svg_x_marg+","+svg_y_marg+")").selectAll("circle").data(data).enter().append("circle")
               .attr("cx", function(d,i) {return (svg_w/svg_wm)*xScale(d.UCity);}).attr("cy", function(d,i) {return svg_h-(svg_h/svg_hm)*yScale(d.UHighway);})
@@ -97,17 +107,102 @@
               .on("mouseover", function(d){tooltip.text(`Num of cylinders: ${d.cylinders + 0}, Make: ${d.Manufacturer}`); return tooltip.style("visibility", "visible");})
               .on("mousemove", function(){return tooltip.style("top",(d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px");})
               .on("mouseout", function(){return tooltip.style("visibility", "hidden");});
+
+              low_fuel_eco_annotate = [
+                {
+                  note: {
+                    label: "Vehicles with higher num of engine cyclinders (more horsepower) generally have lower fuel economy. Also these are luxury sport kind of vehicles",
+                    //title: "Annotation title",
+                    align: "middle",  // right or left
+                    wrap: 400,  // maybe something smaller to see text split in several lines
+                    padding: 10   // More = text lower
+                  },
+                  color: ["#311B92"],
+                  x: (svg_w/svg_wm)*xScale(15)+svg_x_marg,
+                  y: svg_h-(svg_h/svg_hm)*yScale(20)+svg_y_marg,
+                  dy: 50,
+                  dx: 150
+                }
+              ]
+
+              high_fuel_eco_annotate = [
+                {
+                  note: {
+                    label: "Cylinders=0 are electric vehicles, since electricity is not measured in gallons, a conversion factor is used to convert fuel eco into equivalent MPG. They are superior in fuel eco compared to non-electric vehicles",
+                    //title: "Annotation title",
+                    align: "middle",  // right or left
+                    wrap: 200,  // maybe something smaller to see text split in several lines
+                    padding: 10   // More = text lower
+                  },
+                  color: ["#311B92"],
+                  x: (svg_w/svg_wm)*xScale(200)+svg_x_marg,
+                  y: svg_h-(svg_h/svg_hm)*yScale(150)+svg_y_marg,
+                  dy: 50,
+                  dx: 50
+                }
+              ]
+              
+              d3.select("svg").append("text").attr("x", 210).attr("y", 100).text("Color Range Legend").style("font-size", "18px").attr("alignment-baseline","middle")
+              d3.select("svg").append("circle").attr("cx",200).attr("cy",130).attr("r", 6).style("fill", "green")
+              d3.select("svg").append("circle").attr("cx",200).attr("cy",160).attr("r", 6).style("fill", "red")
+              d3.select("svg").append("text").attr("x", 220).attr("y", 130).text("num. of cylinders=0").style("font-size", "15px").attr("alignment-baseline","middle")
+              d3.select("svg").append("text").attr("x", 220).attr("y", 160).text("num. of cylinders=16").style("font-size", "15px").attr("alignment-baseline","middle")
+
+
             }
             else if (flow_state == 2) {
+              chart_title = "Co2 Emission (Grams per Mile)"
               // main scatter plot
               d3.select("svg").append("g").attr("transform","translate("+svg_x_marg+","+svg_y_marg+")").selectAll("circle").data(data).enter().append("circle")
               .attr("cx", function(d,i) {return (svg_w/svg_wm)*xScale(d.UCity);}).attr("cy", function(d,i) {return svg_h-(svg_h/svg_hm)*yScale(d.UHighway);})
               .attr("r", function(d,i) {return min_radius;}).style("fill", function (d) { return myColorCo2(d.co2TailpipeGpm);})
               .on("mouseover", function(d){tooltip.text(`co2 g/mile: ${d.co2TailpipeGpm + 0}, Make: ${d.Manufacturer}`); return tooltip.style("visibility", "visible");})
               .on("mousemove", function(){return tooltip.style("top",(d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px");})
-              .on("mouseout", function(){return tooltip.style("visibility", "hidden");});              
+              .on("mouseout", function(){return tooltip.style("visibility", "hidden");});    
+              
+              low_fuel_eco_annotate = [
+                {
+                  note: {
+                    label: "Co2 emission is larger for high cylinders, low fuel economy vehicles",
+                    //title: "Annotation title",
+                    align: "middle",  // right or left
+                    wrap: 400,  // maybe something smaller to see text split in several lines
+                    padding: 10   // More = text lower
+                  },
+                  color: ["#311B92"],
+                  x: (svg_w/svg_wm)*xScale(15)+svg_x_marg,
+                  y: svg_h-(svg_h/svg_hm)*yScale(20)+svg_y_marg,
+                  dy: 50,
+                  dx: 150
+                }
+              ]
+
+              high_fuel_eco_annotate = [
+                {
+                  note: {
+                    label: "no carbon footprint with electric vehicles (as expected)",
+                    //title: "Annotation title",
+                    align: "middle",  // right or left
+                    wrap: 200,  // maybe something smaller to see text split in several lines
+                    padding: 10   // More = text lower
+                  },
+                  color: ["#311B92"],
+                  x: (svg_w/svg_wm)*xScale(200)+svg_x_marg,
+                  y: svg_h-(svg_h/svg_hm)*yScale(150)+svg_y_marg,
+                  dy: 50,
+                  dx: 50
+                }
+              ]
+              
+              d3.select("svg").append("text").attr("x", 210).attr("y", 100).text("Color Range Legend").style("font-size", "18px").attr("alignment-baseline","middle")
+              d3.select("svg").append("circle").attr("cx",200).attr("cy",130).attr("r", 6).style("fill", "red")
+              d3.select("svg").append("circle").attr("cx",200).attr("cy",160).attr("r", 6).style("fill", "yellow")
+              d3.select("svg").append("text").attr("x", 220).attr("y", 130).text("co2 emission high").style("font-size", "15px").attr("alignment-baseline","middle")
+              d3.select("svg").append("text").attr("x", 220).attr("y", 160).text("co2 emission low(0)").style("font-size", "15px").attr("alignment-baseline","middle")
+
             }
             else if (flow_state == 3) {
+              chart_title = "Annual Fuel Cost (USD) for 15,000 miles "
               // main scatter plot
               d3.select("svg").append("g").attr("transform","translate("+svg_x_marg+","+svg_y_marg+")").selectAll("circle").data(data).enter().append("circle")
               .attr("cx", function(d,i) {return (svg_w/svg_wm)*xScale(d.UCity);}).attr("cy", function(d,i) {return svg_h-(svg_h/svg_hm)*yScale(d.UHighway);})
@@ -115,6 +210,47 @@
               .on("mouseover", function(d){tooltip.text(`Fuel Cost: ${d.fuelCost08 + 0}, Make: ${d.Manufacturer}`); return tooltip.style("visibility", "visible");})
               .on("mousemove", function(){return tooltip.style("top",(d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px");})
               .on("mouseout", function(){return tooltip.style("visibility", "hidden");});              
+            
+              low_fuel_eco_annotate = [
+                {
+                  note: {
+                    label: "As expected fuel cost higher with more cylinders, lower fuel economy vehicles",
+                    //title: "Annotation title",
+                    align: "middle",  // right or left
+                    wrap: 400,  // maybe something smaller to see text split in several lines
+                    padding: 10   // More = text lower
+                  },
+                  color: ["#311B92"],
+                  x: (svg_w/svg_wm)*xScale(15)+svg_x_marg,
+                  y: svg_h-(svg_h/svg_hm)*yScale(20)+svg_y_marg,
+                  dy: 50,
+                  dx: 150
+                }
+              ]
+
+              high_fuel_eco_annotate = [
+                {
+                  note: {
+                    label: "Another reason to adopt electric vehicles, low fuel cost!",
+                    //title: "Annotation title",
+                    align: "middle",  // right or left
+                    wrap: 200,  // maybe something smaller to see text split in several lines
+                    padding: 10   // More = text lower
+                  },
+                  color: ["#311B92"],
+                  x: (svg_w/svg_wm)*xScale(200)+svg_x_marg,
+                  y: svg_h-(svg_h/svg_hm)*yScale(150)+svg_y_marg,
+                  dy: 50,
+                  dx: 50
+                }
+              ]
+
+              d3.select("svg").append("text").attr("x", 210).attr("y", 100).text("Color Range Legend").style("font-size", "18px").attr("alignment-baseline","middle")
+              d3.select("svg").append("circle").attr("cx",200).attr("cy",130).attr("r", 6).style("fill", "orange")
+              d3.select("svg").append("circle").attr("cx",200).attr("cy",160).attr("r", 6).style("fill", "gray")
+              d3.select("svg").append("text").attr("x", 220).attr("y", 130).text("Fuel Cost high").style("font-size", "15px").attr("alignment-baseline","middle")
+              d3.select("svg").append("text").attr("x", 220).attr("y", 160).text("Fuel Cost low").style("font-size", "15px").attr("alignment-baseline","middle")            
+
             }
             // y axis
             d3.select("svg").append("g").attr("transform","translate("+svg_x_marg+","+svg_y_marg+")").call(d3.axisLeft(yScale2).tickValues([10, 20, 50, 100, 150, 200, 250]).tickFormat(d3.format("d")))
@@ -125,42 +261,40 @@
             //Add X axis label
             d3.select("svg").append("text")      // text label for the x axis
                     .attr("x", svg_w/2 )
-                    .attr("y", svg_h + svg_y_marg+svg_y_marg/2 )
+                    .attr("y", svg_h + svg_y_marg + svg_y_marg )
                     .style("text-anchor", "middle")
-                    .text("Average City Fuel Economy(Miles Per Gallon)");
+                    .text("Average City Fuel Economy (Miles Per Gallon)");
             
             d3.select("svg").append("text")
                 .attr("text-anchor", "middle")
-                .attr("y", 40)
-                .attr("x", -500)
+                .attr("y", 15)
+                .attr("x", -350)
                 .attr("transform", "rotate(-90)")
-                .text("Average Highway Fuel Economy(Miles Per Gallon)");
+                .text("Average Highway Fuel Economy (Miles Per Gallon)");
             
-            
-            // Features of the annotation
-            const annotations = [
-              {
-                note: {
-                  label: "Here is the annotation label",
-                  title: "Annotation title",
-                  align: "middle",  // try right or left
-                  wrap: 200,  // try something smaller to see text split in several lines
-                  padding: 10   // More = text lower
-                },
-                color: ["black"],
-                x: 16,
-                y: 16,
-                dy: 10,
-                dx: 10
-              }
-            ]
-            
-            // Add annotation to the chart
-            const makeAnnotations = d3.annotation()
-              .annotations(annotations)
+            d3.select("svg").append("text")
+            .attr("x", (svg_w / 2)+svg_x_marg)             
+            .attr("y", (svg_x_marg / 2))
+            .attr("text-anchor", "middle")  
+            .style("font-size", "22px") 
+            //.style("text-decoration", "underline")  
+            .attr("font-weight", 700)
+            .text(chart_title);
+
+            const annotate_1 = d3.annotation()
+              .annotations(low_fuel_eco_annotate)
+
+            const annotate_2 = d3.annotation()
+              .annotations(high_fuel_eco_annotate)
+
+
             d3.select("svg")
               .append("g")
-              .call(makeAnnotations)
+              .call(annotate_1)
+
+              d3.select("svg")
+              .append("g")
+              .call(annotate_2)
             
         }
 
