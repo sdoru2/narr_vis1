@@ -148,7 +148,7 @@
               d3.select("svg").append("circle").attr("cx",200).attr("cy",160).attr("r", 6).style("fill", "red")
               d3.select("svg").append("text").attr("x", 220).attr("y", 130).text("num. of cylinders=0").style("font-size", "15px").attr("alignment-baseline","middle")
               d3.select("svg").append("text").attr("x", 220).attr("y", 160).text("num. of cylinders=16").style("font-size", "15px").attr("alignment-baseline","middle")
-
+              d3.select("svg").append("text").attr("x", 120).attr("y", 190).text("(Hover mouse over scatter points to get more info.)").style("font-size", "15px").attr("alignment-baseline","middle").attr("font-weight", 700)
 
             }
             else if (flow_state == 2) {
@@ -200,6 +200,8 @@
               d3.select("svg").append("circle").attr("cx",200).attr("cy",160).attr("r", 6).style("fill", "yellow")
               d3.select("svg").append("text").attr("x", 220).attr("y", 130).text("co2 emission high").style("font-size", "15px").attr("alignment-baseline","middle")
               d3.select("svg").append("text").attr("x", 220).attr("y", 160).text("co2 emission low(0)").style("font-size", "15px").attr("alignment-baseline","middle")
+              d3.select("svg").append("text").attr("x", 120).attr("y", 190).text("(Hover mouse over scatter points to get more info.)").style("font-size", "15px").attr("alignment-baseline","middle").attr("font-weight", 700)
+
 
             }
             else if (flow_state == 3) {
@@ -251,6 +253,8 @@
               d3.select("svg").append("circle").attr("cx",200).attr("cy",160).attr("r", 6).style("fill", "gray")
               d3.select("svg").append("text").attr("x", 220).attr("y", 130).text("Fuel Cost high").style("font-size", "15px").attr("alignment-baseline","middle")
               d3.select("svg").append("text").attr("x", 220).attr("y", 160).text("Fuel Cost low").style("font-size", "15px").attr("alignment-baseline","middle")            
+              d3.select("svg").append("text").attr("x", 120).attr("y", 190).text("(Hover mouse over scatter points to get more info.)").style("font-size", "15px").attr("alignment-baseline","middle").attr("font-weight", 700)
+
 
             }
             // y axis
