@@ -99,7 +99,7 @@
                 .style("background-color", "white");
 
             if (flow_state == 1) {
-              chart_title = "Number of Engine Cylinders Relationship with Fuel Economy"
+              chart_title = "Number of Engine Cylinders"
               
               // main scatter plot
               d3.select("svg").append("g").attr("transform","translate("+svg_x_marg+","+svg_y_marg+")").selectAll("circle").data(data).enter().append("circle")
