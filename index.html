@@ -98,6 +98,23 @@
                 .style('color', 'blue')
                 .style("background-color", "white");
 
+            //// COMMON ANNOTATE FOR ALL SCENES
+            eV_eco_annotate = [
+                {
+                  note: {
+                    label: "Electric Vehicles generally have higher city fuel eco. than on highway!!",
+                    //title: "Annotation title",
+                    align: "middle",  // right or left
+                    wrap: 200,  // maybe something smaller to see text split in several lines
+                    padding: 10   // More = text lower
+                  },
+                  color: ["#311B92"],
+                  x: (svg_w/svg_wm)*xScale(105)+svg_x_marg,
+                  y: svg_h-(svg_h/svg_hm)*yScale(82)+svg_y_marg,
+                  dy: 100,
+                  dx: 50
+                }
+              ]
             if (flow_state == 1) {
               chart_title = "Number of Engine Cylinders"
               
@@ -105,7 +122,7 @@
               d3.select("svg").append("g").attr("transform","translate("+svg_x_marg+","+svg_y_marg+")").selectAll("circle").data(data).enter().append("circle")
               .attr("cx", function(d,i) {return (svg_w/svg_wm)*xScale(d.UCity);}).attr("cy", function(d,i) {return svg_h-(svg_h/svg_hm)*yScale(d.UHighway);})
               .attr("r", function(d,i) {return min_radius;}).style("fill", function (d) { return myColorCylinders(d.cylinders);})
-              .on("mouseover", function(d){tooltip.text(`Num of cylinders: ${d.cylinders + 0}, Make: ${d.Manufacturer}`); return tooltip.style("visibility", "visible");})
+              .on("mouseover", function(d){tooltip.text(`Cylinders: ${d.cylinders + 0},Make: ${d.Manufacturer},CityMPG: ${d.UCity},HwyMPG: ${d.UHighway}`); return tooltip.style("visibility", "visible");})
               .on("mousemove", function(){return tooltip.style("top",(d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px");})
               .on("mouseout", function(){return tooltip.style("visibility", "hidden");});
 
@@ -143,6 +160,8 @@
                 }
               ]
               
+
+              
               d3.select("svg").append("text").attr("x", 210).attr("y", 100).text("Color Range Legend").style("font-size", "18px").attr("alignment-baseline","middle")
               d3.select("svg").append("circle").attr("cx",200).attr("cy",130).attr("r", 6).style("fill", "green")
               d3.select("svg").append("circle").attr("cx",200).attr("cy",160).attr("r", 6).style("fill", "red")
@@ -157,7 +176,7 @@
               d3.select("svg").append("g").attr("transform","translate("+svg_x_marg+","+svg_y_marg+")").selectAll("circle").data(data).enter().append("circle")
               .attr("cx", function(d,i) {return (svg_w/svg_wm)*xScale(d.UCity);}).attr("cy", function(d,i) {return svg_h-(svg_h/svg_hm)*yScale(d.UHighway);})
               .attr("r", function(d,i) {return min_radius;}).style("fill", function (d) { return myColorCo2(d.co2TailpipeGpm);})
-              .on("mouseover", function(d){tooltip.text(`co2 g/mile: ${d.co2TailpipeGpm + 0}, Make: ${d.Manufacturer}`); return tooltip.style("visibility", "visible");})
+              .on("mouseover", function(d){tooltip.text(`co2 g/mile: ${d.co2TailpipeGpm + 0}, Make: ${d.Manufacturer},CityMPG: ${d.UCity},HwyMPG: ${d.UHighway}`); return tooltip.style("visibility", "visible");})
               .on("mousemove", function(){return tooltip.style("top",(d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px");})
               .on("mouseout", function(){return tooltip.style("visibility", "hidden");});    
               
@@ -194,7 +213,8 @@
                   dx: 50
                 }
               ]
-              
+                            
+
               d3.select("svg").append("text").attr("x", 210).attr("y", 100).text("Color Range Legend").style("font-size", "18px").attr("alignment-baseline","middle")
               d3.select("svg").append("circle").attr("cx",200).attr("cy",130).attr("r", 6).style("fill", "red")
               d3.select("svg").append("circle").attr("cx",200).attr("cy",160).attr("r", 6).style("fill", "yellow")
@@ -210,7 +230,7 @@
               d3.select("svg").append("g").attr("transform","translate("+svg_x_marg+","+svg_y_marg+")").selectAll("circle").data(data).enter().append("circle")
               .attr("cx", function(d,i) {return (svg_w/svg_wm)*xScale(d.UCity);}).attr("cy", function(d,i) {return svg_h-(svg_h/svg_hm)*yScale(d.UHighway);})
               .attr("r", function(d,i) {return min_radius;}).style("fill", function (d) { return myColorFuelCost(d.fuelCost08);})
-              .on("mouseover", function(d){tooltip.text(`Fuel Cost: ${d.fuelCost08 + 0}, Make: ${d.Manufacturer}`); return tooltip.style("visibility", "visible");})
+              .on("mouseover", function(d){tooltip.text(`Fuel Cost: ${d.fuelCost08 + 0}, Make: ${d.Manufacturer},CityMPG: ${d.UCity},HwyMPG: ${d.UHighway}`); return tooltip.style("visibility", "visible");})
               .on("mousemove", function(){return tooltip.style("top",(d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px");})
               .on("mouseout", function(){return tooltip.style("visibility", "hidden");});              
             
@@ -247,7 +267,7 @@
                   dx: 50
                 }
               ]
-
+              
               d3.select("svg").append("text").attr("x", 210).attr("y", 100).text("Color Range Legend").style("font-size", "18px").attr("alignment-baseline","middle")
               d3.select("svg").append("circle").attr("cx",200).attr("cy",130).attr("r", 6).style("fill", "orange")
               d3.select("svg").append("circle").attr("cx",200).attr("cy",160).attr("r", 6).style("fill", "gray")
@@ -293,15 +313,22 @@
             const annotate_2 = d3.annotation()
               .annotations(high_fuel_eco_annotate)
 
+            const annotate_3 = d3.annotation()
+              .annotations(eV_eco_annotate)
+
 
             d3.select("svg")
               .append("g")
               .call(annotate_1)
 
-              d3.select("svg")
+            d3.select("svg")
               .append("g")
               .call(annotate_2)
-            
+
+            d3.select("svg")
+              .append("g")
+              .call(annotate_3)
+              
         }
 
         
